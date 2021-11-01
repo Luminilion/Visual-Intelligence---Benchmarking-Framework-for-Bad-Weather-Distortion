@@ -13,8 +13,9 @@ This repository contains:
 ### Resources
 
 Below the resources used for the development of the project:
-- Project Proposal [Google Doc](https://docs.google.com/document/d/1qNOLPn8raD1vMe1DtMaB38gz32ec2g34F1GkgsOPekA/edit#) 
+- Project Proposal [Google Doc](https://docs.google.com/document/d/1qNOLPn8raD1vMe1DtMaB38gz32ec2g34F1GkgsOPekA/edit#)
 
 ## Milestone 1
+[Milestone 1 report](https://www.overleaf.com/project/618069eb5c0c60d2b127609f)
 
 ## Milestone 2

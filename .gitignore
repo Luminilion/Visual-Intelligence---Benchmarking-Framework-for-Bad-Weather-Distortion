@@ -17,9 +17,13 @@ ipython_config.py
 
 # Data files
 *.csv
+candidate_model/**/data
 
 # DataSpell files
 */.idea/*
+
+# Pycharm files
+.idea
 
 # Virtual Env
 venv

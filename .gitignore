@@ -27,3 +27,7 @@ candidate_model/**/data
 
 # Virtual Env
 venv
+
+# Exclude data
+*/data/*
+*/data

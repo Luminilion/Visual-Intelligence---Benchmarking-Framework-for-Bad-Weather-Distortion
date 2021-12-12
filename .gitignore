@@ -31,3 +31,4 @@ venv
 # Exclude data
 */data/*
 */data
+data/

@@ -28,7 +28,18 @@ candidate_model/**/data
 # Virtual Env
 venv
 
+#### SOTA
+
 # Exclude data
 */data/*
 */data
 data/
+
+# Exclude pretrained_models
+*/pretrained_models
+
+# Exclude outputs
+*/output
+
+# Exclude logs
+*/log

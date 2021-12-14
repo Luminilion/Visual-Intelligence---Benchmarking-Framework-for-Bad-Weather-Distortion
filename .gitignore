@@ -31,15 +31,15 @@ venv
 #### SOTA
 
 # Exclude data
-*/data/*
-*/data
+**/data
 data/
 
 # Exclude pretrained_models
-*/pretrained_models
+**/pretrained_models
+*.pth
 
 # Exclude outputs
-*/output
+**/output
 
 # Exclude logs
-*/log
+**/log

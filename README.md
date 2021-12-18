@@ -27,5 +27,6 @@ Below the resources used for the development of the project:
 
 The entire content of the folder `candidate_model/Syn2Real` was taken from [this repository](https://github.com/rajeevyasarla/Syn2Real)
 (version of the 11th of December 2021) and belongs exclusively to their authors. Small modification were made by us in 
-the `test.py` file to be able to run the code on Windows, otherwise everything is untouched, including the README.md file
-inside the folder.
+the `test.py` file to be able to run the code on Windows. We also wrote and added the file `run_syn2real.py`, which is the file required
+by us to test a model with our benchmarking framework (see userguide.md for more information). Otherwise everything is untouched, 
+including the README.md file inside the folder.

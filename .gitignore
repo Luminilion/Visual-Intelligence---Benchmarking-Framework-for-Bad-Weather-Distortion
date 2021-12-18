@@ -43,3 +43,6 @@ data/
 
 # Exclude logs
 */log
+
+# Test files
+placeholder_dataset

@@ -3,6 +3,8 @@ import torch
 import random
 from model import DeRain_v2
 import torch.nn as nn
+from torch.utils.data import DataLoader
+import torch.utils.data as data
 import argparse
 import os
 from os import listdir
@@ -11,21 +13,14 @@ from torchvision.transforms import Compose, ToTensor, Normalize
 import torchvision.utils as utils
 
 
-class RunSyn2Real:
+class DataIterator(data.Dataset):
+    def __init__(self, dataset_dir):
+        self.dataset_dir = dataset_dir
+        self.image_names = listdir(self.dataset_dir)
 
-    def __init__(self):
-        # Check and assign arguments passed
-        parser = argparse.ArgumentParser(description='Parameters for running the model with the benchmarking framework.')
-        parser.add_argument("-d", help="Dataset directory", type=str)
-        parser.add_argument("-o", help="Output directory", type=str)
-        args = parser.parse_args()
-
-        self.dataset_dir = args.d
-        self.output_dir = args.o
-
-
-    def _format_image(self, dir, name):
-        img = Image.open(os.path.join(dir, name))
+    def _format_image(self, index):
+        name = self.image_names[index]
+        img = Image.open(os.path.join(self.dataset_dir, name))
 
         # Resizing image in the multiple of 16"
         wd_new, ht_new = img.size
@@ -43,7 +38,22 @@ class RunSyn2Real:
         transform_input = Compose([ToTensor(), Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
         img = transform_input(img)
 
-        return img
+        return img, name
+
+    def __getitem__(self, index):
+        res = self._format_image(index)
+        return res
+
+    def __len__(self):
+        return len(self.image_names)
+
+
+class RunSyn2Real:
+
+    def __init__(self, args):
+        # Assign arguments passed
+        self.dataset_dir = args.d
+        self.output_dir = args.o
 
 
     def _save_image(self, pred_image, image_name, dir):
@@ -58,6 +68,7 @@ class RunSyn2Real:
     def predict_with_model(self):
         # Generate derained images with model
         ## Set variables
+        batch_size=1
         exp_name = "DDN_SIRR_withGP"
         category = "derain"
         seed = 19
@@ -76,11 +87,23 @@ class RunSyn2Real:
         net = DeRain_v2()
         net = net.to(device)
         net = nn.DataParallel(net, device_ids=device_ids)
-        net.load_state_dict(torch.load('./{}/{}_best'.format(exp_name, category), map_location=device))
+        net.load_state_dict(torch.load('../candidate_model/Syn2Real/{}/{}_best'.format(exp_name, category), map_location=device))
 
         ## Pass images
-        image_names = listdir(self.dataset_dir)
-        for image in image_names:
-            img = self._format_image(self.dataset_dir, image)
-            prediction, _ = net(img)  # Predict with model
-            self._save_image(prediction, image, self.output_dir)  # Save predicted image in output directory
+        loader = DataLoader(DataIterator(self.dataset_dir), batch_size=batch_size, shuffle=False, num_workers=8)
+        for id, data in enumerate(loader):
+            with torch.no_grad():
+                img, name = data
+                img = img.to(device)
+                prediction, _ = net(img)  # Predict with model
+            self._save_image(prediction, name, self.output_dir)  # Save predicted image in output directory
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Parameters for running the model with the benchmarking framework.')
+    parser.add_argument("-d", help="Dataset directory", type=str)
+    parser.add_argument("-o", help="Output directory", type=str)
+    args = parser.parse_args()
+
+    runsyn2real = RunSyn2Real(args)
+    runsyn2real.predict_with_model()

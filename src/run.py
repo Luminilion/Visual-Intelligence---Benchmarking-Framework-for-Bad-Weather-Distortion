@@ -1,64 +1,59 @@
 import os
 import subprocess
 import sys
-import getopt
+import argparse
 
 
 class Runner:
 
     def __init__(self, args):
-        # parse arguments, raise exceptions if not complete
         # set arguments as attributes of the class
-        self.args = args  # Replace with nice attribution after parsing
+        self.candidate = args.m
+        self.run_file = args.f
+
+        # Run requirement files
+        ## requirements.txt
+        run_req = subprocess.run(["pip", "install", "-r", "../requirements_files/requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
+        assert run_req.returncode == 0, "Could not install requirements for benchmarking framework."
+        ## [Candidate_model_name]-requirements.txt
+        run_req_candidate = subprocess.run(["pip", "install", "-r", "../requirements_files/"+ self.candidate + "-requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
+        assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
+
+        # Create required directories
+        os.makedirs("../candidate_model_predictions/", exist_ok=True)
+
 
     def run_candidate_model_on_dataset(self):
-        # Set path to dataset images
-        # Set path to output directory
-        # Run python file specified in args with the two paths as arguments
+        # Set path to dataset images - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
+        dataset_dir = "../placeholder_dataset_synthetic/"  # To be changed to ../../dataset/ when our dataset images will be ready
 
-        # Python files needed
+        # Set path to output directory - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
+        output_dir = "../candidate_model_predictions/"
+
+        # Run python file specified in args with the two paths as arguments
+        run_candidate = subprocess.run(["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d", dataset_dir, "-o", output_dir], shell=True)#, stdout=subprocess.DEVNULL)
+        assert run_candidate.returncode == 0, "An error occurred while running the candidate model."
+
+        # Python files needed - add to userguide
         #  - A python file that takes the directory of the raw dataset images and a path to an output directory as
         #    input, then preprocesses the dataset images, then predicts with the NN and outputs the denoised images
         #    inside the specified directory
         #     - Arguments should be -d <dataset_images_dir> -o <output_dir>
-        #     - Paths passed are specified w.r.t. dir repo_root/candidate_model/model_name/
-        pass
+        #     - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
+
 
     def run_sota_docker(self):
         # Start docker for SOTA
         pass
 
 
-def run():
-    try:
-        # Read inputs from user when calling the run.py file
-        runner = Runner(sys.argv)
-        runner.run_candidate_model_on_dataset()
-        runner.run_sota_docker()
-    # Add catches for specifically defined errors here if any
-    except getopt.GetoptError as e:
-        print("run.py -m <model_name> -f <file_with_functions>")
-    except BaseException as e:
-        print("An unidentified error occurred:")
-        print(e)
-
-
-def sandbox():  # remove when done with experiments
-    # Run commands
-    test_cd = os.system("cd ../sota_model")
-    print("The command 'cd ../sota_model' with os.system ran with exit code", test_cd)
-    list_files = subprocess.run(["cd", "../sota_model"], shell=True, stdout=subprocess.DEVNULL)  # Recommended version
-    print("The command 'cd ../sota_model' with subprocess.run ran with exit code", list_files.returncode)
-
-    # Check OS
-
-    # Get user arguments
-    print("Number of arguments:", len(sys.argv))
-    print("Arguments list:", str(sys.argv))
-
-
 if __name__ == '__main__':
+    # Read inputs from user when calling the run.py file
+    parser = argparse.ArgumentParser(description='Parameters for running the benchmarking framework.')
+    parser.add_argument("-m", help="Candidate model name", type=str)
+    parser.add_argument("-f", help="File to run to obtain predictions", type=str)
+    args = parser.parse_args()
 
-    #run()
-    #sandbox()
-    pass
+    runner = Runner(args)
+    runner.run_candidate_model_on_dataset()
+    runner.run_sota_docker()

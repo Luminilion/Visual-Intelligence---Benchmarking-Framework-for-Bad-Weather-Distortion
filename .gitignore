@@ -18,6 +18,7 @@ ipython_config.py
 # Data files
 *.csv
 candidate_model/**/data
+candidate_model_predictions/*
 
 # DataSpell files
 */.idea/*
@@ -45,4 +46,4 @@ data/
 */log
 
 # Test files
-placeholder_dataset
+placeholder_dataset*

@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 import argparse
 
 
@@ -11,19 +10,38 @@ class Runner:
         self.candidate = args.m
         self.run_file = args.f
 
-        # Run requirement files
-        ## requirements.txt
-        run_req = subprocess.run(["pip", "install", "-r", "../requirements_files/requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
+        # Run some assertions
+        # - Args exist
+        assert self.candidate is not None, "Provide the name of your candidate model with '-m <candidate-model-name>'!"
+        assert self.run_file is not None, \
+            "Provide the name of the runfile for your candidate model with '-f <runfile-name.py>'"
+        # - Folder with model name exists inside folder candidate_model
+        assert os.path.isdir(os.path.join("../candidate_model/", self.candidate)), \
+            "Could not locate your model's folder inside the folder 'candidate_model'!"
+        # - Requirements file corresponding to the candidate model exists
+        assert os.path.isfile(os.path.join("../requirements_files/", self.candidate + "-requirements.txt")), \
+            "Could not locate the requirements file for your model inside the 'requirements_files' folder!"
+        # - Runfile provided for candidate model exists inside model folder
+        assert os.path.isfile(os.path.join("../candidate_model/", self.candidate, self.run_file)), \
+            "Could not locate the runfile of your candidate model inside the folder of your model!"
+
+        # Run requirement file for pipeline
+        run_req = subprocess.run(
+            ["pip", "install", "-r", "../requirements_files/requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
         assert run_req.returncode == 0, "Could not install requirements for benchmarking framework."
-        ## [Candidate_model_name]-requirements.txt
-        run_req_candidate = subprocess.run(["pip", "install", "-r", "../requirements_files/"+ self.candidate + "-requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
-        assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
 
         # Create required directories
         os.makedirs("../candidate_model_predictions/", exist_ok=True)
 
 
     def run_candidate_model_on_dataset(self):
+
+        # Run requirements file for candidate model
+        run_req_candidate = subprocess.run(
+            ["pip", "install", "-r", os.path.join("../requirements_files/", self.candidate + "-requirements.txt")], shell=True,
+            stdout=subprocess.DEVNULL)
+        assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
+
         # Set path to dataset images - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
         dataset_dir = "../placeholder_dataset_synthetic/"  # To be changed to ../../dataset/ when our dataset images will be ready
 
@@ -34,16 +52,13 @@ class Runner:
         run_candidate = subprocess.run(["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d", dataset_dir, "-o", output_dir], shell=True)#, stdout=subprocess.DEVNULL)
         assert run_candidate.returncode == 0, "An error occurred while running the candidate model."
 
-        # Python files needed - add to userguide
-        #  - A python file that takes the directory of the raw dataset images and a path to an output directory as
-        #    input, then preprocesses the dataset images, then predicts with the NN and outputs the denoised images
-        #    inside the specified directory
-        #     - Arguments should be -d <dataset_images_dir> -o <output_dir>
-        #     - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
 
+    def run_segmentation(self):
 
-    def run_sota_docker(self):
-        # Start docker for SOTA
+        # Run requirements file for segmentation model
+
+        # Run runfile for sgmentation model
+
         pass
 
 
@@ -56,4 +71,4 @@ if __name__ == '__main__':
 
     runner = Runner(args)
     runner.run_candidate_model_on_dataset()
-    runner.run_sota_docker()
+    runner.run_segmentation()

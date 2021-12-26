@@ -14,8 +14,8 @@ from models.UNet import get_unet
 ##
 models = {
     "SINet": get_sinet(),
-    "UNet": get_unet(),
-    "HRNet":""
+    "UNet": get_unet()
+    # "HRNet":""
 }
 
 def load_model(alias, list_available=False):

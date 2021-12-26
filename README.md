@@ -26,10 +26,10 @@ Below the resources used for the development of the project:
 ## Syn2Real
 
 The contents of the folder `candidate_model/Syn2Real` originates from [the Syn2Real repository](https://github.com/rajeevyasarla/Syn2Real)
-(version of the 11th of December 2021) and belongs exclusively to its authors. Minor modifications were made by us in
-the `test.py` file to be able to run the code on Windows, otherwise everything is untouched, including the README.md file
+(version of the 11th of December 2021) and belongs exclusively to its authors. It is and should be used according to the License under which the code is share.
+Minor modifications were made by us in the `test.py` file to be able to run the code on Windows. We also added the file 
+`run-syn2real.py` to be able to test our pipeline. Otherwise everything is untouched, including the README.md file 
 inside the folder.
-It is and should be used according to the License under which the code is share.
 
 ## HRNet
 

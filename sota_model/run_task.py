@@ -23,7 +23,7 @@ class TaskRunner:
 
         self.denoised_dir = "../candidate_model_predictions"  # Directory of candidate model predictions
         self.output_dir = "../output/"  # Directory containing all outputs
-        self.output_images_dir = ["clean_seg/", "noisy_seg/", "denoised_seg/"]
+        self.output_images_dir = ["clean_seg/", "noisy_seg/", "clean_denoised_seg/", "noisy_denoised_seg/"]
 
         # Create required directories
         os.makedirs(self.output_dir, exist_ok=True)
@@ -49,8 +49,9 @@ class TaskRunner:
         start = start_timer()
 
         # TODO: Load data from dataset & predictions from candidate model
-        image_set_names = ["CLEAN", "NOISY", "CLEAN_DENOISED", "DENOISED"]
-        # TODO assert length
+        image_set_names = ["RAW", "RAW_NOISY", "DENOISED", "NOISY_DENOISED"]
+        assert len(image_set_names) == len(self.output_images_dir)
+
         image_sets = dict()
         for name in image_set_names:
             # Fake data for testing purposes
@@ -77,7 +78,7 @@ class TaskRunner:
             for i, name in enumerate(image_set_names):
                 y, colored, classified = results[name]
 
-                store_results(colored, os.path.join(self.output_dir, self.output_images_dir[i]))  # works until here
+                store_results(colored, os.path.join(self.output_dir, self.output_images_dir[i]))
                 metric_evals[name] = metric(y, torch.from_numpy(classified))
             evaluations[m] = metric_evals
 

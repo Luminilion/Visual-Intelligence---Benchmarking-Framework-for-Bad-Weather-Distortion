@@ -18,6 +18,7 @@ class TaskRunner:
         self.model = args.fm  # Framework model
         self.dataset = args.d  # Dataset to use
         self.task = args.t  # Task to perform
+        self.noise_type = args.n  # Noise type
 
         # Note: asserting values passed are valid is already done in run.py
 
@@ -48,14 +49,27 @@ class TaskRunner:
         # Start timer
         start = start_timer()
 
-        # TODO: Load data from dataset & predictions from candidate model
-        image_set_names = ["RAW", "RAW_NOISY", "DENOISED", "NOISY_DENOISED"]
+        # Load data from dataset & predictions from candidate model
+        prefix = "weather_"
+        raw_dir = os.path.join('../dataset/', self.dataset + "/")
+        raw_noisy_dir = os.path.join('../dataset/', prefix + self.dataset + "/")
+        denoised_dir = os.path.join('../candidate_model_predictions/', self.dataset + "/")
+        noisy_denoised_dir = os.path.join('../candidate_model_predictions/', prefix + self.dataset + "/")
+
+        noise_type = "rainy" if self.noise_type == "rain" else "foggy"
+        image_sets = {
+            "RAW": load_data(self.dataset, location=raw_dir),
+            "RAW_NOISY": load_data(noise_type + "_" + self.dataset, location=raw_noisy_dir, main_data_location=raw_dir),
+            "DENOISED": load_data(self.dataset, location=denoised_dir),
+            "NOISY_DENOISED": load_data(noise_type + "_" + self.dataset, location=noisy_denoised_dir, main_data_location=raw_dir),
+        }
+
+        image_set_names = image_sets.keys()
         assert len(image_set_names) == len(self.output_images_dir)
 
-        image_sets = dict()
-        for name in image_set_names:
-            # Fake data for testing purposes
-            image_sets[name] = torch.randn(1, 3, 1024, 2048)
+        # Noise data for testing purposes
+        # for i, name in enumerate(image_set_names):
+            # image_sets[name] = torch.randn(1, 3, 1024, 2048)
 
         # Load model
         model = load_model(self.model).eval()
@@ -106,6 +120,7 @@ if __name__ == '__main__':
     parser.add_argument("-fm", help="Framework model to use", type=str)  # default values already defined in run.py
     parser.add_argument("-d", help="Dataset to use", type=str)
     parser.add_argument("-t", help="Task to perform by the framework", type=str)
+    parser.add_argument("-n", help="Noise type", type=str)
     args = parser.parse_args()
 
     runner = TaskRunner(args)

@@ -19,6 +19,7 @@ class Runner:
         self.framework_model = args.fm
         self.dataset = args.d
         self.task = args.t
+        self.noise_type = args.n
 
         # Note: Paths passed here are specified w.r.t. dir repo_root/src because we call the commands from there,
         # meaning the paths are always relative to this location
@@ -31,9 +32,11 @@ class Runner:
         # - Task is valid
         # - Framework model passed is valid
         # - Dataset passed is valid
+        # - Noise type is valid
         # - Framework model and dataset requested suitable for task
         #   -> add further checks inplace of the 'False' if more tasks are supported by the framework
-        # - Dataset directory is available
+        # - Dataset directory for clean images is available
+        # - Dataset directory for noisy images is available
 
         assert self.candidate is not None, "Provide the name of your candidate model with '-m <candidate-model-name>'!"
         assert self.run_file is not None, \
@@ -47,30 +50,21 @@ class Runner:
         assert self.task in {"semantic"}, "Invalid task requested."
         assert self.framework_model in {"UNet", "SiNet"}, "Pass a valid framework model."
         assert self.dataset in {"cityscapes"}, "Pass a valid dataset name."
+        assert self.noise_type in {"rain", "fog"}, "Pass a valid noise type."
         assert \
             self.task == "semantic" and self.framework_model in {"UNet", "SiNet"} and self.dataset in {"cityscapes"}\
             or False, "Framework model and/or dataset passed are not suitable for the requested task."
         assert os.path.isdir(os.path.join("../dataset/", self.dataset +"/")), \
-            "Could not locate dataset files. Please download and place them as indicated in the userguide!"
+            "Could not locate clean dataset files. Please download and place them as indicated in the userguide!"
+        assert os.path.isdir(os.path.join("../dataset/", "weather_" + self.dataset + "/")), \
+            "Could not locate noisy dataset files. Please download and place them as indicated in the userguide!"
 
         # Run requirement file for pipeline
         run_req = subprocess.run(
             ["pip", "install", "-r", "../requirements_files/requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
         assert run_req.returncode == 0, "Could not install requirements for benchmarking framework."
 
-    def run_candidate_model_on_dataset(self):
-
-        # Run requirements file for candidate model
-        run_req_candidate = subprocess.run(
-            ["pip", "install", "-r", os.path.join("../requirements_files/", self.candidate + "-requirements.txt")], shell=True,
-            stdout=subprocess.DEVNULL)
-        assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
-
-        # Set path to output directory
-        output_dir = os.path.join("../candidate_model_predictions/", self.dataset + "/")
-
-        # Set path to dataset images
-        dataset_dir = os.path.join("../dataset/", self.dataset + "/")
+    def __get_all_subfolders_and_run_candidate_model(self, dataset_dir, output_dir):
 
         # Additional path specifications depending on the exact dataset
         if self.dataset == "cityscapes":
@@ -79,7 +73,8 @@ class Runner:
             output_dir = os.path.join(output_dir, additional_part)
 
         dataset_subdirs = glob.glob(os.path.join(dataset_dir, "**"), recursive=True)
-        dataset_subdirs = set([os.path.split(p)[0][len(dataset_dir):] for p in dataset_subdirs if os.path.splitext(p)[1]])  # Split head and file, keep head only if entry has an extension (i.e. is a file), strip dataset_dir
+        dataset_subdirs = set([os.path.split(p)[0][len(dataset_dir):] for p in dataset_subdirs if os.path.splitext(p)[
+            1]])  # Split head and file, keep head only if entry has an extension (i.e. is a file), strip dataset_dir
 
         # Iterate over subfolders
         for subdir in dataset_subdirs:
@@ -96,6 +91,27 @@ class Runner:
             assert run_candidate.returncode == 0, \
                 "An error occurred while running the candidate model on images in directory " + current_dataset_subdir
 
+    def run_candidate_model_on_dataset(self):
+
+        # Run requirements file for candidate model
+        run_req_candidate = subprocess.run(
+            ["pip", "install", "-r", os.path.join("../requirements_files/", self.candidate + "-requirements.txt")], shell=True,
+            stdout=subprocess.DEVNULL)
+        assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
+
+        # Set path to dataset images and output directory
+        # - Clean
+        dataset_dir = os.path.join("../dataset/", self.dataset + "/")
+        output_dir = os.path.join("../candidate_model_predictions/", self.dataset + "/")
+        # - Noisy
+        prefix = "weather_"
+        weather_dataset_dir = os.path.join("../dataset/", prefix + self.dataset + "/")
+        weather_output_dir = os.path.join("../candidate_model_predictions/", prefix + self.dataset + "/")
+
+        self.__get_all_subfolders_and_run_candidate_model(dataset_dir, output_dir)
+        self.__get_all_subfolders_and_run_candidate_model(weather_dataset_dir, weather_output_dir)
+
+
     def run_framework_task(self):
 
         # Run requirements file for framework model
@@ -106,7 +122,8 @@ class Runner:
 
         # Run runfile for framework model
         run_task = subprocess.run(
-            ["python", "../sota_model/run_task.py", "-fm", self.framework_model, "-d", self.dataset, "-t", self.task],
+            ["python", "../sota_model/run_task.py", "-fm", self.framework_model, "-d", self.dataset, "-t", self.task,
+             "-n", self.noise_type],
             shell=True)
         assert run_task.returncode == 0, "An error occurred while running the framework model."
 
@@ -119,6 +136,7 @@ if __name__ == '__main__':
     parser.add_argument("-fm", help="Framework model to use", type=str, default="UNet")
     parser.add_argument("-d", help="Dataset to use", type=str, default="cityscapes")
     parser.add_argument("-t", help="Task to perform by the framework", type=str, default="semantic")
+    parser.add_argument("-n", help="Noise type", type=str, default="rain")
     parser.add_argument("-l", help="List tasks, models and datasets supported by the framework. Pass 't' for tasks,"
                                    "'fm' for models and 'd' for datasets.")
     args = parser.parse_args()

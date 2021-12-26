@@ -43,3 +43,6 @@ data/
 
 # Exclude logs
 **/log
+
+# exclude reports
+**/reports

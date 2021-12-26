@@ -112,6 +112,8 @@ def get_semantic_RGB(model):
             output.append(colored)
         if get_classification:
             output.append(idtfd)
+        if len(output)==1:
+            return output[0]
         return output
         
     return semantic_segmentation_RGB

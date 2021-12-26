@@ -15,7 +15,7 @@ def get_cityscapes(location='../../data/cityscapes'):
     This class uses the Pytorch dataloader created for the dataset.
     """
     try:
-        dataset = D.Cityscapes(location, split="val", target_type='semantic')
+        dataset = D.Cityscapes(location, split="train", target_type='semantic')
     except ValueError:
         raise RuntimeError("There was an error loading your data. Try using the `location` attribute of `load_data` to indicate your data's folder location.")
     

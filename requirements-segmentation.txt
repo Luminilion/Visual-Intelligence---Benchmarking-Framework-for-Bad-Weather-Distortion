@@ -1,0 +1,8 @@
+torch                   # >= 1.10.0+cu113
+torchvision             # >= 1.10.0+cu113
+numpy                   # >= 1.21.4
+matplotlib              # >= 3.5.0
+
+torchmetrics == 0.6.2
+segmentation-models-pytorch == 0.2.1
+pytorchcv == 0.0.67

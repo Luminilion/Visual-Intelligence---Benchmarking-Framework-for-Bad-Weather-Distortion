@@ -19,6 +19,7 @@ ipython_config.py
 *.csv
 candidate_model/**/data
 candidate_model_predictions/*
+dataset/*
 
 # DataSpell files
 */.idea/*

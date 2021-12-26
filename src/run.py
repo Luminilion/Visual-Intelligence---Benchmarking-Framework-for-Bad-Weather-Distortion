@@ -19,6 +19,9 @@ class Runner:
         self.dataset = args.d
         self.task = args.t
 
+        # Note: Paths passed here are specified w.r.t. dir repo_root/src because we call the commands from there,
+        # meaning the paths are always relative to this location
+
         # Run some assertions:
         # - Args without default value exist
         # - Folder with model name exists inside folder candidate_model
@@ -29,6 +32,7 @@ class Runner:
         # - Dataset passed is valid
         # - Framework model and dataset requested suitable for task
         #   -> add further checks inplace of the 'False' if more tasks are supported by the framework
+        # - Dataset directory is available
 
         assert self.candidate is not None, "Provide the name of your candidate model with '-m <candidate-model-name>'!"
         assert self.run_file is not None, \
@@ -45,15 +49,13 @@ class Runner:
         assert \
             self.task == "semantic" and self.framework_model in {"UNet", "SiNet"} and self.dataset in {"cityscapes"}\
             or False, "Framework model and/or dataset passed are not suitable for the requested task."
+        assert os.path.isdir(os.path.join("../dataset/", self.dataset +"/")), \
+            "Could not locate dataset files. Please download and place them as indicated in the userguide!"
 
         # Run requirement file for pipeline
         run_req = subprocess.run(
             ["pip", "install", "-r", "../requirements_files/requirements.txt"], shell=True, stdout=subprocess.DEVNULL)
         assert run_req.returncode == 0, "Could not install requirements for benchmarking framework."
-
-        # Create required directories
-        os.makedirs("../candidate_model_predictions/", exist_ok=True)
-
 
     def run_candidate_model_on_dataset(self):
 
@@ -63,30 +65,49 @@ class Runner:
             stdout=subprocess.DEVNULL)
         assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
 
-        # TODO: Handle different datasets
-        # TODO predict for both clean and noisy image - val
-        # TODO keep same folder structure as cityscapes
-        # Set path to dataset images - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
-        dataset_dir = "../placeholder_dataset_synthetic/"  # To be changed to ../../dataset/ when our dataset images will be ready
+        # Set path to output directory
+        output_dir = os.path.join("../candidate_model_predictions/", self.dataset + "/")
 
-        # Set path to output directory - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
-        output_dir = "../candidate_model_predictions/"
+        # Set path to dataset images
+        dataset_dir = os.path.join("../dataset/", self.dataset + "/")
 
-        # Run python file specified in args with the two paths as arguments
-        run_candidate = subprocess.run(["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d", dataset_dir, "-o", output_dir], shell=True)#, stdout=subprocess.DEVNULL)
-        assert run_candidate.returncode == 0, "An error occurred while running the candidate model."
+        # Additional path specifications depending on the exact dataset
+        if self.dataset == "cityscapes":
+            additional_part = "leftImg8bit/"
+            dataset_dir = os.path.join(dataset_dir, additional_part)
+            output_dir = os.path.join(output_dir, additional_part)
 
+        dataset_subdirs = [name + "/" for name in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, name))]
+
+        # Iterate over subfolders
+        for subdir in dataset_subdirs:
+            current_dataset_subdir = os.path.join(dataset_dir, subdir)
+            subsubdirs = [name + "/" for name in os.listdir(current_dataset_subdir) if os.path.isdir(os.path.join(current_dataset_subdir, name))]
+            for subsubdir in subsubdirs:
+                current_dataset_subsubdir = os.path.join(current_dataset_subdir, subsubdir)
+                current_output_subsubdir = os.path.join(output_dir, subdir, subsubdir)
+                os.makedirs(current_output_subsubdir, exist_ok=True)  # Create directories if they don't already exist
+
+                # Run python file specified in args with the two paths as arguments
+                run_candidate = subprocess.run(
+                    ["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d",
+                     current_dataset_subsubdir, "-o", current_output_subsubdir],
+                    shell=True)  # We want the console output of the candidate model runfile, in case the user needs it
+                assert run_candidate.returncode == 0, \
+                    "An error occurred while running the candidate model on images in directory " + current_dataset_subsubdir
 
     def run_framework_task(self):
 
         # Run requirements file for framework model
         run_req = subprocess.run(
             ["pip", "install", "-r", "../requirements_files/requirements-" + self.task + ".txt"],
-            shell=True)#, stdout=subprocess.DEVNULL)
+            shell=True, stdout=subprocess.DEVNULL)
         assert run_req.returncode == 0, "Could not install requirements for framework model."
 
         # Run runfile for framework model
-        run_task = subprocess.run(["python", "../sota_model/run_task.py", "-fm", self.framework_model, "-d", self.dataset, "-t", self.task], shell=True)
+        run_task = subprocess.run(
+            ["python", "../sota_model/run_task.py", "-fm", self.framework_model, "-d", self.dataset, "-t", self.task],
+            shell=True)
         assert run_task.returncode == 0, "An error occurred while running the framework model."
 
 

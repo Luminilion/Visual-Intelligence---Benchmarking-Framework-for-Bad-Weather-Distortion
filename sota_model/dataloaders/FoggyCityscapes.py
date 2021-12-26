@@ -8,12 +8,11 @@ import torchvision.datasets as D
 from PIL import Image
 
 import os
-import pandas as pd
 
 class FoggyCityscapes(Dataset):
-    def __init__(self, img_dir, cityscapes_dir, rain_diff='30m'):
-        self.img_labels = D.Cityscapes(cityscapes_dir, split="val", target_type='semantic')
-        self.img_dir = img_dir + '/leftImg8bit/train/fog_transmittance/'+rain_diff
+    def __init__(self, img_dir, cityscapes_dir, transmittance='30m'):
+        self.img_labels = D.Cityscapes(cityscapes_dir, split="train", target_type='semantic')
+        self.img_dir = img_dir + '/leftImg8bit/train/fog_transmittance/' + transmittance
     
         cities = os.listdir(self.img_dir)
         self.img_per_folder = {}

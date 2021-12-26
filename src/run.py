@@ -1,6 +1,7 @@
 import os
 import subprocess
 import argparse
+import glob
 
 import sys
 sys.path.insert(1, "../")
@@ -77,24 +78,23 @@ class Runner:
             dataset_dir = os.path.join(dataset_dir, additional_part)
             output_dir = os.path.join(output_dir, additional_part)
 
-        dataset_subdirs = [name + "/" for name in os.listdir(dataset_dir) if os.path.isdir(os.path.join(dataset_dir, name))]
+        dataset_subdirs = glob.glob(os.path.join(dataset_dir, "**"), recursive=True)
+        dataset_subdirs = set([os.path.split(p)[0][len(dataset_dir):] for p in dataset_subdirs if os.path.splitext(p)[1]])  # Split head and file, keep head only if entry has an extension (i.e. is a file), strip dataset_dir
 
         # Iterate over subfolders
         for subdir in dataset_subdirs:
             current_dataset_subdir = os.path.join(dataset_dir, subdir)
-            subsubdirs = [name + "/" for name in os.listdir(current_dataset_subdir) if os.path.isdir(os.path.join(current_dataset_subdir, name))]
-            for subsubdir in subsubdirs:
-                current_dataset_subsubdir = os.path.join(current_dataset_subdir, subsubdir)
-                current_output_subsubdir = os.path.join(output_dir, subdir, subsubdir)
-                os.makedirs(current_output_subsubdir, exist_ok=True)  # Create directories if they don't already exist
+            current_output_subdir = os.path.join(output_dir, subdir)
 
-                # Run python file specified in args with the two paths as arguments
-                run_candidate = subprocess.run(
-                    ["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d",
-                     current_dataset_subsubdir, "-o", current_output_subsubdir],
-                    shell=True)  # We want the console output of the candidate model runfile, in case the user needs it
-                assert run_candidate.returncode == 0, \
-                    "An error occurred while running the candidate model on images in directory " + current_dataset_subsubdir
+            os.makedirs(current_output_subdir, exist_ok=True)  # Create directories if they don't already exist
+
+            # Run python file specified in args with the two paths as arguments
+            run_candidate = subprocess.run(
+                ["python", os.path.join("../candidate_model/", self.candidate, self.run_file), "-d",
+                 current_dataset_subdir, "-o", current_output_subdir],
+                shell=True)  # We want the console output of the candidate model runfile, in case the user needs it
+            assert run_candidate.returncode == 0, \
+                "An error occurred while running the candidate model on images in directory " + current_dataset_subdir
 
     def run_framework_task(self):
 

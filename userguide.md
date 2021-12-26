@@ -4,17 +4,47 @@
 
 1. A **requirements file**: A txt file containing all requirements of modules with their versions for the model to run properly.
 Follow the naming convention `*-requirements.txt` where * is the exact name of your candidate model to avoid errors.
-2. A **python run file** that takes 1. the path to the directory of the benchmarking framework dataset, 
+2. A **python run file** that takes 1. the path to the directory of the benchmarking framework dataset,
    and 2. a path to an output directory as inputs. It should preprocess the images in the dataset, then predict with the
    candidate model and outputs the denoised images inside the specified output directory. This file will be called with the following arguments:
    `python <your_run_file.py> -d <benchmarking_dataset_directory> -o <output_directory>`, so make sure it can read these arguments.
+
 
 ## Place your files
 
 1. Create a folder with your model's name inside the folder `candidate_model`.
 2. Place the **python run file**, your trained model and all other files needed to run your candidate model inside this folder.
 3. Place your **requirements file** inside the `requirements_files` folder.
-4. Download the dataset [TODO: Add explanation on where and how to download the dataset and place files]
+4. Download the dataset (see next section for details)
+
+## Data prepration
+
+1. [Currently supported is Cityscapes] Download the cityscapes `leftImg8bit` and `gtFine` data packages from the [official download page](https://www.cityscapes-dataset.com/downloads/). Folder structure should match the following:
+````
+- root
+    --- data
+         --- cityscapes
+              --- leftImg8bit
+              --- gtFine
+````
+
+2. Download the extensions for rain and fog from the [official download page](https://www.cityscapes-dataset.com/downloads/).
+
+3. Follow the instructions on the corresponding official websites in order to reproduce the augmented dataset.<br>
+  a) [Rain augmentation instructions](https://team.inria.fr/rits/computer-vision/weather-augment/) <br>
+  b) [Fog augmentation instructions](https://people.ee.ethz.ch/~csakarid/SFSU_synthetic/#FoggyDriving)
+The generated folder structure should be as follows:
+````
+- root
+    --- data
+         --- rain_cityscapes
+              --- leftImg8bit
+                    --- 5mm
+         --- fog_cityscapes
+              --- leftImg8bit
+                    --- 30m
+````
+
 
 ## Run the framework
 
@@ -31,5 +61,5 @@ Follow the naming convention `*-requirements.txt` where * is the exact name of y
 6. Use `python run.py -l <'t'/'fm'/'d'>` to list supported tasks (use `t`), framework models (use `fm`) or datasets (use `d`)
 
 ## See the results
-
-The segmented images and the report are all available inside the `output` folder, generated during execution of the framework.
+The report is generated inside the `reports` folder, generated during execution of the framework.
+The segmented images are all available inside the `output` folder, generated during execution of the framework.

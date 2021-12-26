@@ -9,7 +9,7 @@ The loader's creation method should support the following arguments.
 - location (str): an optional string specifying the dataset's location. 
 """
 
-from dataloaders.Cityscapes import get_cityscapes
+from sota_model.dataloaders.Cityscapes import get_cityscapes
 
 ##
 ## The following dict can be modified to add dataloaders. 

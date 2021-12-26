@@ -3,7 +3,7 @@ Provides access to the different metrics functions.
 Each metric must take as input a tensor of targets and a tensor of predictions i.e. shape (N, C, H, W), respectively the number of samples, predicted likelihood per class, height, width.
 """
 
-from metrics.TorchMetrics import get_iou, get_dice
+from sota_model.metrics.TorchMetrics import get_iou, get_dice
 
 ##
 ## The following dict can be modified to add metrics. 

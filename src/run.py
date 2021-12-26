@@ -2,6 +2,12 @@ import os
 import subprocess
 import argparse
 
+import sys
+sys.path.insert(1, "../")
+
+from sota_model.models_loading import *
+from sota_model.data_loading import *
+from sota_model.tasks_loading import *
 
 class Runner:
 
@@ -58,6 +64,8 @@ class Runner:
         assert run_req_candidate.returncode == 0, "Could not install requirements for candidate model."
 
         # TODO: Handle different datasets
+        # TODO predict for both clean and noisy image - val
+        # TODO keep same folder structure as cityscapes
         # Set path to dataset images - Paths passed are specified w.r.t. dir repo_root/src because we call the commands from there, meaning the paths are always relative to this location
         dataset_dir = "../placeholder_dataset_synthetic/"  # To be changed to ../../dataset/ when our dataset images will be ready
 
@@ -74,7 +82,7 @@ class Runner:
         # Run requirements file for framework model
         run_req = subprocess.run(
             ["pip", "install", "-r", "../requirements_files/requirements-" + self.task + ".txt"],
-            shell=True, stdout=subprocess.DEVNULL)
+            shell=True)#, stdout=subprocess.DEVNULL)
         assert run_req.returncode == 0, "Could not install requirements for framework model."
 
         # Run runfile for framework model
@@ -96,8 +104,12 @@ if __name__ == '__main__':
 
     if args.l is not None:
         assert args.l in {"t", "fm", "d"}, "Invalid value for listing"
-        # TODO: List available tasks, models for each task and datasets for each task in the console, finish process
-        pass
+        if args.l == "t":
+            load_tasks("", list_available=True)
+        elif args.l == "fm":
+            load_model("", list_available=True)
+        else:
+            load_data("", list_available=True)
     else:
         runner = Runner(args)
         runner.run_candidate_model_on_dataset()

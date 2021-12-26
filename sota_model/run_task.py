@@ -49,7 +49,8 @@ class TaskRunner:
         start = start_timer()
 
         # TODO: Load data from dataset & predictions from candidate model
-        image_set_names = ["CLEAN", "NOISY", "DENOISED"]
+        image_set_names = ["CLEAN", "NOISY", "CLEAN_DENOISED", "DENOISED"]
+        # TODO assert length
         image_sets = dict()
         for name in image_set_names:
             # Fake data for testing purposes
@@ -62,7 +63,7 @@ class TaskRunner:
         task = load_tasks(self.task)
         task_model = task(model)
 
-        # Run model on all data in the order clean, noisy, denoised
+        # Run model on all data
         results = dict()
 
         for name in image_set_names:
@@ -76,7 +77,7 @@ class TaskRunner:
             for i, name in enumerate(image_set_names):
                 y, colored, classified = results[name]
 
-                store_results(colored, os.path.join(self.output_dir, self.output_images_dir[i]))
+                store_results(colored, os.path.join(self.output_dir, self.output_images_dir[i]))  # works until here
                 metric_evals[name] = metric(y, torch.from_numpy(classified))
             evaluations[m] = metric_evals
 

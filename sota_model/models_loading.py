@@ -6,8 +6,8 @@ They have to be registered under an alias in the `models` dict.
 They have to implement a class in the `models/` folder.
 
 """
-from models.SINet import get_sinet
-from models.UNet import get_unet
+from sota_model.models.SINet import get_sinet
+from sota_model.models.UNet import get_unet
 
 ##
 ## The following dict can be modified to add models. 

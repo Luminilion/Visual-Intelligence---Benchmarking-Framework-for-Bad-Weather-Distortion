@@ -3,7 +3,7 @@ Provides the tasks done to evaluate the candidate model.
 Each task should take as input a list of images and a model.
 """
 
-from tasks.SemanticSegmentation import get_semantic_RGB
+from sota_model.tasks.SemanticSegmentation import get_semantic_RGB
 
 
 ##

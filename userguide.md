@@ -21,7 +21,9 @@ Follow the naming convention `*-requirements.txt` where * is the exact name of y
 
 1. Open a terminal.
 2. Navigate to the root of this repository.
-3. Run the command `python src/run.py -m <exact_candidate_model_name> -f <run_file_name.py>`.
+3. Set the python path to the absolute path to the root of this repository with
+`export PYTHONPATH=<project_path>` (linux) or directly in the environment variables
+4. Run the command `cd src && python run.py -m <exact_candidate_model_name> -f <run_file_name.py>`.
 
 ## See the results
 

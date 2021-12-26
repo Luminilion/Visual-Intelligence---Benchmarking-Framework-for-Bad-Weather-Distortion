@@ -32,7 +32,7 @@ def load_data(alias, list_available=False, location=None):
     
     Parameters:
         alias: str
-            Alias for the model to load.
+            Alias for the dataset to load.
         list_available: bool (default=False)
             Lists all available aliases.
     """

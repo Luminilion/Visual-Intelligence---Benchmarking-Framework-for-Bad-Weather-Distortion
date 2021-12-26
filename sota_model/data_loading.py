@@ -10,16 +10,19 @@ The loader's creation method should support the following arguments.
 """
 
 from dataloaders.Cityscapes import get_cityscapes
+from dataloaders.FoggyCityscapes import FoggyCityscapes
+from dataloaders.RainyCityscapes import RainyCityscapes
 
 ##
 ## The following dict can be modified to add dataloaders. 
 ##
 dataloaders = {
     "cityscapes": get_cityscapes,
-    # "cityscapes_bad_weather": get_cs_augmented_loader,
+    "foggy_cityscapes": FoggyCityscapes,
+    "rainy_cityscapes": RainyCityscapes
 }
 
-def load_data(alias, list_available=False, location=None):
+def load_data(alias, list_available=False, location=None, main_data_location=None):
     """
     Loads a dataloader providing access to the data to be used for the semantic segmentation evaluation.
     If `list_available` attribute is set to True, the function only prints all available aliases.
@@ -48,7 +51,9 @@ def load_data(alias, list_available=False, location=None):
     if not alias in dataloaders.keys():
         raise AttributeError('The dataloader alias is invalid. Please use load_data("", list_available=True) to see all available aliases.')
     
-    if location is not None:
+    if main_data_location is not None:
+        loader = dataloaders[alias](location, main_data_location)
+    elif location is not None:
         loader = dataloaders[alias](location=location)
     else:
         loader = dataloaders[alias]()

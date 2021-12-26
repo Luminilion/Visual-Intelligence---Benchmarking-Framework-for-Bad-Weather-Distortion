@@ -2,8 +2,6 @@
 
 ## Pre-requisites for your model
 
-[TODO: Insert all information on what the user needs to have in its data for the framework to function correctly]
-
 1. A **requirements file**: A txt file containing all requirements of modules with their versions for the model to run properly.
 Follow the naming convention `*-requirements.txt` where * is the exact name of your candidate model to avoid errors.
 2. A **python run file** that takes 1. the path to the directory of the benchmarking framework dataset, 
@@ -16,6 +14,7 @@ Follow the naming convention `*-requirements.txt` where * is the exact name of y
 1. Create a folder with your model's name inside the folder `candidate_model`.
 2. Place the **python run file**, your trained model and all other files needed to run your candidate model inside this folder.
 3. Place your **requirements file** inside the `requirements_files` folder.
+4. Download the dataset [TODO: Add explanation on where and how to download the dataset and place files]
 
 ## Run the framework
 
@@ -23,8 +22,14 @@ Follow the naming convention `*-requirements.txt` where * is the exact name of y
 2. Navigate to the root of this repository.
 3. Set the python path to the absolute path to the root of this repository with
 `export PYTHONPATH=<project_path>` (linux) or directly in the environment variables
-4. Run the command `cd src && python run.py -m <exact_candidate_model_name> -f <run_file_name.py>`.
+4. Run the command `cd src && python run.py -m <exact_candidate_model_name> -f <run_file_name.py>`
+5. Add further arguments to this command if needed:
+   * `-fm <framework-model>` to use a chosen framework model, default is `Unet`
+   * `-d <dataset-name>` to use a chosen dataset, default is `cityscapes`
+   * `-t <task-name>` to perform a chosen task, default is `semantic`
+   * `-n <noise-type>` to use a different noise type, default is `rain`
+6. Use `python run.py -l <'t'/'fm'/'d'>` to list supported tasks (use `t`), framework models (use `fm`) or datasets (use `d`)
 
 ## See the results
 
-[TODO: Explain where the user can find the results]
+The segmented images and the report are all available inside the `output` folder, generated during execution of the framework.
